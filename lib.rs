@@ -101,7 +101,7 @@ mod payment_splitter {
         /// * `NoPayees`: If there are no registered payees.
         /// * `ZeroShare`: If the total balance is zero or if a calculation error (division by zero) occurs.
         ///
-        #[ink(message)]
+    //    #[ink(message)]
         pub fn calculate_payout(&mut self) -> Result<Vec<PayoutInfo>, Error> {
             self.ensure_caller_is_designated_payee()?;
             let total_balance = self.env().balance();
@@ -158,11 +158,12 @@ mod payment_splitter {
         /// * `TransferFailed`: If the transfer of funds to a payee fails.
         ///
         #[ink(message)]
-        pub fn trigger_payout(&mut self, payout_info: Vec<PayoutInfo>) -> Result<(), Error> {
+        pub fn trigger_payout(&mut self) -> Result<(), Error> {
             self.ensure_caller_is_designated_payee()?;
             self.ensure_reentrancy_guard_not_locked()?;
 
             self.locked = true;
+            let payout_info = self.calculate_payout()?;
 
             for info in payout_info {
                 self
@@ -285,7 +286,7 @@ mod payment_splitter {
             assert_eq!(payout_info[1].amount, expected_charlie_received);
 
             // Trigger Payout
-            contract.trigger_payout(payout_info).unwrap();
+            contract.trigger_payout().unwrap();
 
             //Get balances after payout
             let contract_balance_after = get_balance(contract.env().account_id());
